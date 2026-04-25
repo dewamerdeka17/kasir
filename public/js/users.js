@@ -21,7 +21,8 @@ function renderUsersPage() {
                 <td>${formatDate(u.created_at)}</td>
                 <td><div class="btn-group">
                   <button class="btn btn-ghost btn-sm" onclick='openUserForm(${JSON.stringify(u)})'>Edit</button>
-                  <button class="btn btn-danger btn-sm" onclick="deleteUser(${u.id})">Nonaktifkan</button>
+                  <button class="btn btn-danger btn-sm" onclick="deactivateUser(${u.id})">Nonaktifkan</button>
+                  <button class="btn btn-sm" style="background:var(--danger);color:#fff;opacity:0.8" onclick="permanentDeleteUser(${u.id},'${u.username}')">🗑 Hapus</button>
                 </div></td>
               </tr>`).join('')}
             </tbody>
@@ -140,9 +141,21 @@ async function saveUser() {
   }
 }
 
-async function deleteUser(id) {
+async function deactivateUser(id) {
   confirm('Nonaktifkan user ini?', async () => {
-    try { await API.del(`/api/users/${id}`); showToast('User dinonaktifkan', 'success'); renderUsersPage(); }
+    try { await API.del(`/api/users/${id}`); showToast('User dinonaktifkan ✓', 'success'); renderUsersPage(); }
     catch(e) { showToast(e.message, 'error'); }
+  });
+}
+
+async function permanentDeleteUser(id, username) {
+  confirm(`⚠️ HAPUS PERMANEN user "${username}"?\n\nData akan dihapus dari database dan tidak bisa dikembalikan.\nJika user memiliki riwayat transaksi, penghapusan akan ditolak.`, async () => {
+    try {
+      const result = await API.del(`/api/users/${id}/permanent`);
+      showToast(result.message || `User "${username}" berhasil dihapus ✓`, 'success');
+      renderUsersPage();
+    } catch(e) {
+      showToast(e.message || 'Gagal menghapus user', 'error');
+    }
   });
 }

@@ -54,4 +54,28 @@ router.delete('/:id', requireRole('admin'), (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
+// Hapus permanen user (hard delete)
+router.delete('/:id/permanent', requireRole('admin'), (req, res) => {
+  try {
+    const userId = parseInt(req.params.id);
+    if (userId === req.session.user.id)
+      return res.status(400).json({ error: 'Tidak bisa menghapus akun sendiri' });
+
+    // Cek apakah user ada
+    const user = dbGet('SELECT id, username FROM users WHERE id = ?', [userId]);
+    if (!user) return res.status(404).json({ error: 'User tidak ditemukan' });
+
+    // Cek apakah user punya transaksi (jangan hapus jika masih ada data terkait)
+    const txCount = dbGet('SELECT COUNT(*) as cnt FROM transactions WHERE user_id = ?', [userId]);
+    if (txCount && txCount.cnt > 0) {
+      return res.status(400).json({
+        error: `User "${user.username}" memiliki ${txCount.cnt} transaksi. Nonaktifkan saja untuk menjaga integritas data.`
+      });
+    }
+
+    dbRun('DELETE FROM users WHERE id = ?', [userId]);
+    res.json({ success: true, message: `User "${user.username}" berhasil dihapus permanen` });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
 module.exports = router;
