@@ -39,15 +39,23 @@ const PrintUtil = {
     const timeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
     const t = tplType; // alias pendek
 
+    // Custom store info dari template (override BRAND defaults)
+    const storeName = getTplText(t, 'custom_store_name', '') || BRAND.receiptHeader;
+    const storeAddr = getTplText(t, 'custom_store_address', '') || BRAND.receiptTagline;
+    const storeContact = getTplText(t, 'custom_store_contact', '');
+
     let html = `
       <div class="print-receipt">
         <div class="receipt-header">`;
 
     if (getTplOption(t, 'show_store_name', true)) {
-      html += `<h2>${BRAND.receiptHeader}</h2>`;
+      html += `<h2>${storeName}</h2>`;
     }
     if (getTplOption(t, 'show_address', true)) {
-      html += `<p>${BRAND.receiptTagline}</p>`;
+      html += `<p>${storeAddr}</p>`;
+    }
+    if (getTplOption(t, 'show_contact', true) && storeContact) {
+      html += `<p>${storeContact}</p>`;
     }
     const headerExtra = getTplText(t, 'header_text', '');
     if (getTplOption(t, 'show_header', true) && headerExtra) {
@@ -201,10 +209,16 @@ const PrintUtil = {
     const timeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
     const t = 'bar';
 
+    // Custom store info dari template
+    const storeName = getTplText(t, 'custom_store_name', '') || BRAND.receiptHeader;
+    const storeAddr = getTplText(t, 'custom_store_address', '') || BRAND.receiptTagline;
+    const storeContact = getTplText(t, 'custom_store_contact', '');
+
     let html = `<div class="print-receipt"><div class="receipt-header">`;
 
-    if (getTplOption(t, 'show_store_name', true)) html += `<h2>${BRAND.receiptHeader}</h2>`;
-    if (getTplOption(t, 'show_address', true)) html += `<p>${BRAND.receiptTagline}</p>`;
+    if (getTplOption(t, 'show_store_name', true)) html += `<h2>${storeName}</h2>`;
+    if (getTplOption(t, 'show_address', true)) html += `<p>${storeAddr}</p>`;
+    if (getTplOption(t, 'show_contact', true) && storeContact) html += `<p>${storeContact}</p>`;
 
     const headerExtra = getTplText(t, 'header_text', '');
     if (getTplOption(t, 'show_header', true) && headerExtra) html += `<p>${headerExtra}</p>`;

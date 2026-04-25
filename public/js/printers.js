@@ -417,6 +417,9 @@ function renderTemplateEditorTab(settings) {
   } catch(e) {}
 
   const def = {
+    custom_store_name: '',
+    custom_store_address: '',
+    custom_store_contact: '',
     show_store_name: true,
     show_address: true,
     show_contact: true,
@@ -467,6 +470,27 @@ function renderTemplateEditorTab(settings) {
             </div>
           </div>
 
+          <!-- Info Toko (Custom / Editable) -->
+          <div style="margin-bottom:1rem">
+            <p style="font-size:0.82rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.75rem">🏪 Info Toko (Edit Manual)</p>
+            <div class="info-box" style="margin-bottom:0.75rem;font-size:0.8rem">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+              <p>Isi field di bawah untuk mengganti teks default di struk. Kosongkan untuk menggunakan default dari brand.</p>
+            </div>
+            <div class="form-group">
+              <label>Nama Toko <span style="color:var(--text-muted);font-size:0.78rem">(default: ${BRAND.receiptHeader})</span></label>
+              <input type="text" id="tpl-custom_store_name" value="${tpl.custom_store_name || ''}" placeholder="${BRAND.receiptHeader}" oninput="updateReceiptPreview()">
+            </div>
+            <div class="form-group">
+              <label>Alamat Toko <span style="color:var(--text-muted);font-size:0.78rem">(default: ${BRAND.receiptTagline})</span></label>
+              <input type="text" id="tpl-custom_store_address" value="${tpl.custom_store_address || ''}" placeholder="${BRAND.receiptTagline}" oninput="updateReceiptPreview()">
+            </div>
+            <div class="form-group">
+              <label>No. Telepon / Kontak <span style="color:var(--text-muted);font-size:0.78rem">(opsional)</span></label>
+              <input type="text" id="tpl-custom_store_contact" value="${tpl.custom_store_contact || ''}" placeholder="Contoh: 0812-3456-7890" oninput="updateReceiptPreview()">
+            </div>
+          </div>
+
           <!-- Elemen yang ditampilkan -->
           <div style="margin-bottom:1rem">
             <p style="font-size:0.82rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.75rem">Tampilkan Elemen</p>
@@ -498,6 +522,39 @@ function renderTemplateEditorTab(settings) {
             <div class="form-group">
               <label>Teks Footer Tambahan <span style="color:var(--text-muted);font-size:0.78rem">(opsional)</span></label>
               <input type="text" id="tpl-footer_text" value="${tpl.footer_text || ''}" placeholder="Contoh: Follow IG @kedaipulo" oninput="updateReceiptPreview()">
+            </div>
+          </div>
+
+          <!-- Panduan Placeholder -->
+          <div style="border-top:1px solid var(--border-light);padding-top:1rem;margin-top:0.5rem">
+            <button class="btn btn-ghost btn-sm" style="width:100%;justify-content:space-between;margin-bottom:0.5rem" onclick="togglePlaceholderGuide()">
+              <span style="font-weight:600;font-size:0.82rem;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-muted)">📋 Panduan Placeholder</span>
+              <svg id="placeholder-guide-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" style="transition:transform 0.2s"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+            <div id="placeholder-guide-body" style="display:none">
+              <div class="info-box" style="margin-bottom:0.75rem;font-size:0.8rem">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                <p>Placeholder berikut otomatis diganti saat cetak struk. Gunakan toggle di atas untuk menampilkan/menyembunyikan elemen.</p>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.3rem;font-size:0.78rem;color:var(--text-secondary)">
+                <div style="padding:0.3rem 0.5rem;background:var(--bg-secondary);border-radius:var(--radius-sm)"><code style="color:var(--accent-hover);font-size:0.72rem">{{store_name}}</code><br>Nama toko</div>
+                <div style="padding:0.3rem 0.5rem;background:var(--bg-secondary);border-radius:var(--radius-sm)"><code style="color:var(--accent-hover);font-size:0.72rem">{{store_address}}</code><br>Alamat toko</div>
+                <div style="padding:0.3rem 0.5rem;background:var(--bg-secondary);border-radius:var(--radius-sm)"><code style="color:var(--accent-hover);font-size:0.72rem">{{store_contact}}</code><br>Nomor kontak</div>
+                <div style="padding:0.3rem 0.5rem;background:var(--bg-secondary);border-radius:var(--radius-sm)"><code style="color:var(--accent-hover);font-size:0.72rem">{{invoice_number}}</code><br>Nomor invoice</div>
+                <div style="padding:0.3rem 0.5rem;background:var(--bg-secondary);border-radius:var(--radius-sm)"><code style="color:var(--accent-hover);font-size:0.72rem">{{order_number}}</code><br>Nomor order</div>
+                <div style="padding:0.3rem 0.5rem;background:var(--bg-secondary);border-radius:var(--radius-sm)"><code style="color:var(--accent-hover);font-size:0.72rem">{{table_number}}</code><br>Nomor meja</div>
+                <div style="padding:0.3rem 0.5rem;background:var(--bg-secondary);border-radius:var(--radius-sm)"><code style="color:var(--accent-hover);font-size:0.72rem">{{date}}</code><br>Tanggal transaksi</div>
+                <div style="padding:0.3rem 0.5rem;background:var(--bg-secondary);border-radius:var(--radius-sm)"><code style="color:var(--accent-hover);font-size:0.72rem">{{time}}</code><br>Jam transaksi</div>
+                <div style="padding:0.3rem 0.5rem;background:var(--bg-secondary);border-radius:var(--radius-sm)"><code style="color:var(--accent-hover);font-size:0.72rem">{{cashier}}</code><br>Nama kasir</div>
+                <div style="padding:0.3rem 0.5rem;background:var(--bg-secondary);border-radius:var(--radius-sm)"><code style="color:var(--accent-hover);font-size:0.72rem">{{items}}</code><br>Daftar item</div>
+                <div style="padding:0.3rem 0.5rem;background:var(--bg-secondary);border-radius:var(--radius-sm)"><code style="color:var(--accent-hover);font-size:0.72rem">{{subtotal}}</code><br>Subtotal</div>
+                <div style="padding:0.3rem 0.5rem;background:var(--bg-secondary);border-radius:var(--radius-sm)"><code style="color:var(--accent-hover);font-size:0.72rem">{{total}}</code><br>Total bayar</div>
+                <div style="padding:0.3rem 0.5rem;background:var(--bg-secondary);border-radius:var(--radius-sm)"><code style="color:var(--accent-hover);font-size:0.72rem">{{payment_method}}</code><br>TUNAI / QRIS</div>
+                <div style="padding:0.3rem 0.5rem;background:var(--bg-secondary);border-radius:var(--radius-sm)"><code style="color:var(--accent-hover);font-size:0.72rem">{{amount_paid}}</code><br>Uang diterima</div>
+                <div style="padding:0.3rem 0.5rem;background:var(--bg-secondary);border-radius:var(--radius-sm)"><code style="color:var(--accent-hover);font-size:0.72rem">{{change}}</code><br>Kembalian</div>
+                <div style="padding:0.3rem 0.5rem;background:var(--bg-secondary);border-radius:var(--radius-sm)"><code style="color:var(--accent-hover);font-size:0.72rem">{{thank_you}}</code><br>Ucapan terima kasih</div>
+                <div style="padding:0.3rem 0.5rem;background:var(--bg-secondary);border-radius:var(--radius-sm)"><code style="color:var(--accent-hover);font-size:0.72rem">{{footer_text}}</code><br>Footer tambahan</div>
+              </div>
             </div>
           </div>
         </div>
@@ -561,6 +618,7 @@ async function switchTemplateSubTab(btn, type) {
     let tpl = {};
     try { tpl = JSON.parse(settings[key] || '{}'); } catch(e) {}
     const def = {
+      custom_store_name:'', custom_store_address:'', custom_store_contact:'',
       show_store_name:true, show_address:true, show_contact:true, show_header:true,
       show_footer:true, show_thank_you:true, show_table:true, show_date:true,
       show_time:true, show_payment_method:true, show_cashier:true, show_item_notes:true,
@@ -588,13 +646,17 @@ function updateReceiptPreview() {
   const now = new Date();
   const dateStr = now.toLocaleDateString('id-ID', { day:'2-digit', month:'short', year:'numeric' });
   const timeStr = now.toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit' });
-  const brandName = (typeof BRAND !== 'undefined') ? BRAND.receiptHeader : 'Kedai Pulo';
-  const brandTagline = (typeof BRAND !== 'undefined') ? BRAND.receiptTagline : 'Jl. Pulo No. 1';
+  const defaultBrandName = (typeof BRAND !== 'undefined') ? BRAND.receiptHeader : 'Kedai Pulo';
+  const defaultBrandTagline = (typeof BRAND !== 'undefined') ? BRAND.receiptTagline : 'Jl. Pulo No. 1';
+  const storeName = tpl.custom_store_name || defaultBrandName;
+  const storeAddr = tpl.custom_store_address || defaultBrandTagline;
+  const storeContact = tpl.custom_store_contact || '';
 
   let html = '<div class="rt-prev">';
-  if (tpl.show_store_name) html += `<h2>${brandName}</h2>`;
-  if (tpl.show_address) html += `<p class="rp">${brandTagline}</p>`;
-  if (tpl.show_contact) html += `<p class="rp">Telp: 08xx-xxxx-xxxx</p>`;
+  if (tpl.show_store_name) html += `<h2>${storeName}</h2>`;
+  if (tpl.show_address) html += `<p class="rp">${storeAddr}</p>`;
+  if (tpl.show_contact && storeContact) html += `<p class="rp">${storeContact}</p>`;
+  else if (tpl.show_contact && !storeContact) html += `<p class="rp" style="color:#aaa;font-style:italic">Telp: (belum diisi)</p>`;
   if (tpl.show_header && tpl.header_text) html += `<p class="rp">${tpl.header_text}</p>`;
   html += '<div class="div"></div>';
   html += '<p class="rp">No: KP-20260414-001</p>';
@@ -615,7 +677,7 @@ function updateReceiptPreview() {
   html += '<div class="ft">';
   if (tpl.show_thank_you) html += `<p>${tpl.thank_you_text || 'Terima kasih!'}</p>`;
   if (tpl.show_footer && tpl.footer_text) html += `<p>${tpl.footer_text}</p>`;
-  html += `<p>${brandName}</p>`;
+  html += `<p>${storeName}</p>`;
   html += '</div>';
   html += '</div>';
   el.innerHTML = html;
@@ -623,6 +685,7 @@ function updateReceiptPreview() {
 
 function getTemplateCurrent() {
   const keys = [
+    'custom_store_name','custom_store_address','custom_store_contact',
     'show_store_name','show_address','show_contact','show_header','show_footer',
     'show_thank_you','show_table','show_date','show_time','show_payment_method',
     'show_cashier','show_item_notes','header_text','footer_text','thank_you_text'
@@ -650,6 +713,7 @@ async function saveReceiptTemplate() {
 
 function resetReceiptTemplate() {
   const defaults = {
+    custom_store_name:'', custom_store_address:'', custom_store_contact:'',
     show_store_name:true, show_address:true, show_contact:true, show_header:true,
     show_footer:true, show_thank_you:true, show_table:true, show_date:true,
     show_time:true, show_payment_method:true, show_cashier:true, show_item_notes:true,
@@ -671,6 +735,15 @@ function resetReceiptTemplate() {
 function toggleAccordion(bodyId, btn) {
   const body = document.getElementById(bodyId);
   const arrow = btn.querySelector('.acc-arrow');
+  if (!body) return;
+  const isOpen = body.style.display !== 'none';
+  body.style.display = isOpen ? 'none' : 'block';
+  if (arrow) arrow.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(180deg)';
+}
+
+function togglePlaceholderGuide() {
+  const body = document.getElementById('placeholder-guide-body');
+  const arrow = document.getElementById('placeholder-guide-arrow');
   if (!body) return;
   const isOpen = body.style.display !== 'none';
   body.style.display = isOpen ? 'none' : 'block';

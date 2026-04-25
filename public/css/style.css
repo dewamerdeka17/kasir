@@ -2099,11 +2099,11 @@ code {
 
 .qris-payment-img {
   display: block;
-  width: min(80vw, 360px);
-  height: min(80vw, 360px);
+  width: min(85vw, 400px);
+  height: min(85vw, 400px);
   object-fit: contain;
   background: white;
-  padding: 12px;
+  padding: 16px;
   border-radius: var(--radius-lg);
 }
 
@@ -2125,14 +2125,26 @@ code {
 
 .qris-scan-label {
   color: var(--text-secondary);
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   margin: 0;
+  font-weight: 500;
 }
 
 .qris-fullscreen-btn {
-  margin-top: 0.25rem;
-  font-size: 0.85rem;
-  font-weight: 600;
+  margin-top: 0.5rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  padding: 0.6rem 1.5rem;
+  background: linear-gradient(135deg, var(--accent), #7c3aed);
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  animation: qrisPulse 2s ease-in-out infinite;
+}
+
+@keyframes qrisPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4); }
+  50% { box-shadow: 0 0 0 8px rgba(99, 102, 241, 0); }
 }
 
 /* QRIS Fullscreen Overlay */
@@ -2140,8 +2152,8 @@ code {
   position: fixed;
   inset: 0;
   z-index: 9999;
-  background: rgba(0,0,0,0.85);
-  backdrop-filter: blur(8px);
+  background: rgba(0,0,0,0.92);
+  backdrop-filter: blur(12px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2156,8 +2168,8 @@ code {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1rem;
-  max-width: 500px;
+  gap: 1.25rem;
+  max-width: 600px;
   width: 100%;
 }
 
@@ -2173,31 +2185,66 @@ code {
 .qris-fullscreen-img-wrap {
   background: white;
   border-radius: var(--radius-xl);
-  padding: 1.25rem;
-  box-shadow: 0 0 60px rgba(0,0,0,0.5);
+  padding: 1.5rem;
+  box-shadow: 0 0 80px rgba(99, 102, 241, 0.2), 0 0 40px rgba(0,0,0,0.5);
 }
 
 .qris-fullscreen-img {
   display: block;
-  width: min(85vw, 420px);
-  height: min(85vw, 420px);
+  width: min(90vw, 550px);
+  height: min(90vw, 550px);
   object-fit: contain;
 }
 
 .qris-fullscreen-hint {
-  color: rgba(255,255,255,0.65);
-  font-size: 0.88rem;
+  color: rgba(255,255,255,0.7);
+  font-size: 1rem;
+  font-weight: 500;
   margin: 0;
 }
 
-@media (max-width: 640px) {
+/* Tablet (768px - 1024px) — QRIS jauh lebih besar */
+@media (min-width: 641px) and (max-width: 1024px) {
   .qris-payment-img {
-    width: min(90vw, 300px);
-    height: min(90vw, 300px);
+    width: min(70vw, 420px);
+    height: min(70vw, 420px);
+    padding: 20px;
   }
   .qris-fullscreen-img {
-    width: 90vw;
-    height: 90vw;
+    width: min(85vw, 520px);
+    height: min(85vw, 520px);
+  }
+  .qris-fullscreen-img-wrap {
+    padding: 2rem;
+  }
+}
+
+/* Mobile (< 640px) — QRIS hampir full-width */
+@media (max-width: 640px) {
+  .qris-payment-img {
+    width: 92vw;
+    height: 92vw;
+    max-width: 380px;
+    max-height: 380px;
+    padding: 14px;
+  }
+  .qris-fullscreen-img {
+    width: 94vw;
+    height: 94vw;
+    max-width: 500px;
+    max-height: 500px;
+  }
+  .qris-fullscreen-img-wrap {
+    padding: 1rem;
+    border-radius: var(--radius-lg);
+  }
+  .qris-fullscreen-hint {
+    font-size: 0.9rem;
+  }
+  .qris-fullscreen-btn {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
   }
 }
 

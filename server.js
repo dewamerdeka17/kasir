@@ -16,8 +16,16 @@ app.use(session({
   cookie: { maxAge: 24 * 60 * 60 * 1000 }
 }));
 
-// Static files
-app.use(express.static(path.join(__dirname, 'public')));
+// Static files — disable caching for JS/CSS during development
+app.use(express.static(path.join(__dirname, 'public'), {
+  setHeaders: (res, filePath) => {
+    if (filePath.endsWith('.js') || filePath.endsWith('.css')) {
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
+    }
+  }
+}));
 app.use('/uploads', express.static(path.join(__dirname, 'public', 'uploads')));
 
 // Routes
