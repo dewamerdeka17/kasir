@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Kedai Pulo POS</title>
-  <meta name="description" content="Kedai Pulo POS System - Sistem Kasir Modern untuk F&B">
+  <title>Kedai Pulo</title>
+  <meta name="description" content="Kedai Pulo POS Sistem Kasir Modern untuk F&B">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -35,6 +35,19 @@
             <p id="login-error" class="error-text" style="display:none"></p>
           </form>
         </div>
+        <!-- Author Credit -->
+        <div style="text-align:center;margin-top:1.25rem;color:rgba(255,255,255,0.35);font-size:0.75rem;line-height:1.7">
+          <span>Dibuat oleh <strong style="color:rgba(255,255,255,0.55)">DewaMerdeka</strong></span><br>
+          <a href="https://instagram.com/dewanjeng" target="_blank" rel="noopener"
+             style="color:rgba(255,255,255,0.45);text-decoration:none;display:inline-flex;align-items:center;gap:0.3rem;margin-top:0.15rem">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+              <circle cx="12" cy="12" r="4"/>
+              <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/>
+            </svg>
+            @dewanjeng
+          </a>
+        </div>
       </div>
     </div>
 
@@ -55,7 +68,7 @@
           </a>
           <a href="#" class="nav-item" data-page="pos">
             <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
-            <span>Kasir / POS</span>
+            <span>Kasir</span>
           </a>
           <div class="nav-divider"><span>Master Data</span></div>
           <a href="#" class="nav-item" data-page="menu" data-roles="admin,kasir">
@@ -110,6 +123,13 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
           </button>
         </div>
+        <!-- Author Credit Sidebar -->
+        <div style="padding:0.5rem 1rem 0.75rem;text-align:center;border-top:1px solid rgba(255,255,255,0.06);margin-top:0.25rem">
+          <span style="font-size:0.7rem;color:rgba(255,255,255,0.28)">by DewaMerdeka &nbsp;·&nbsp;
+            <a href="https://instagram.com/dewanjeng" target="_blank" rel="noopener"
+               style="color:rgba(255,255,255,0.38);text-decoration:none">@dewanjeng</a>
+          </span>
+        </div>
       </aside>
 
       <!-- Main Content -->
@@ -156,6 +176,8 @@
   <script src="/js/stocks.js"></script>
   <script src="/js/expenses.js"></script>
   <script src="/js/discounts.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
+  <script src="/js/excel-export.js"></script>
   <script src="/js/reports.js"></script>
   <script src="/js/users.js"></script>
   <script src="/js/printers.js"></script>

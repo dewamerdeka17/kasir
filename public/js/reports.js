@@ -21,7 +21,7 @@ function renderReportsPage() {
         <button class="btn btn-ghost btn-sm" onclick="loadReportCustomRange()">Filter</button>
         <div class="report-export-bar">
           <button class="btn btn-ghost btn-sm" onclick="exportReportPrint()">🖨️ Print</button>
-          <button class="btn btn-ghost btn-sm" onclick="exportReportCSV()">📊 Excel</button>
+          <button class="btn btn-ghost btn-sm" onclick="exportReportCSV()">📊 Excel (.xlsx)</button>
         </div>
       </div>
     </div>
@@ -229,50 +229,258 @@ function showReportTab(tab, btn) {
   }
 }
 
+// ============================================================
+//  PRINT THERMAL LAPORAN — Safe Revision
+// ============================================================
+
 function exportReportPrint() {
-  window.print();
+  if (!currentReportData) {
+    showToast('Muat laporan terlebih dahulu', 'warning');
+    return;
+  }
+  openReportPrintPreview();
 }
+
+/** Build the thermal-formatted report HTML string */
+function generateReportPrintTemplate(data, paperWidth) {
+  const s  = data.summary;
+  const pw = paperWidth === '58mm' ? 32 : 42; // char width per line
+  const hr = '-'.repeat(pw);
+  const now = new Date();
+  const printedAt = now.toLocaleDateString('id-ID', {
+    day: '2-digit', month: '2-digit', year: 'numeric'
+  }) + ' ' + now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+  const userName = window._currentUser ? (window._currentUser.full_name || window._currentUser.username) : 'Admin';
+
+  // Right-align helper: pad label + value to line width
+  function row(label, value) {
+    const maxLabel = pw - value.length - 1;
+    const lbl = label.length > maxLabel ? label.substring(0, maxLabel) : label;
+    const spaces = pw - lbl.length - value.length;
+    return lbl + ' '.repeat(Math.max(1, spaces)) + value;
+  }
+
+  // Menu terlaris rows
+  const topMenuRows = data.topMenus.length > 0
+    ? data.topMenus.slice(0, 10).map((m, i) =>
+        `${(i+1).toString().padStart(2)}. ${m.menu_name.substring(0, pw - 14).padEnd(pw - 14)} ${String(m.total_sold).padStart(4)}x`)
+      .join('\n')
+    : 'Belum ada data';
+
+  // Kategori terlaris rows
+  const topCatRows = data.topCategories.length > 0
+    ? data.topCategories.slice(0, 5).map((c, i) =>
+        `${(i+1).toString().padStart(2)}. ${c.category_name.substring(0, pw - 14).padEnd(pw - 14)} ${String(c.total_sold).padStart(4)}x`)
+      .join('\n')
+    : 'Belum ada data';
+
+  // Jam ramai
+  let peakHoursText = 'Belum ada data';
+  if (data.peakHours && data.peakHours.length > 0) {
+    const sorted = [...data.peakHours].sort((a, b) => b.count - a.count).slice(0, 5);
+    peakHoursText = sorted.map(h =>
+      row(`  ${String(h.hour).padStart(2, '0')}:00 - ${String(h.hour + 1).padStart(2, '0')}:00`, `${h.count} tx`)
+    ).join('\n');
+  }
+
+  // Format tanggal: pendek untuk 58mm, normal untuk 80mm
+  function fmtD(dateStr) {
+    const d = new Date(dateStr);
+    if (paperWidth === '58mm') {
+      return d.toLocaleDateString('id-ID', { day:'2-digit', month:'2-digit', year:'2-digit' });
+    }
+    return formatDate(dateStr);
+  }
+
+  const periodeLines = paperWidth === '58mm'
+    ? [`Dari    : ${fmtD(data.period.start)}`, `Sampai  : ${fmtD(data.period.end)}`]
+    : [`Periode : ${fmtD(data.period.start)} - ${fmtD(data.period.end)}`];
+
+  const headerMeta = [
+    ...periodeLines,
+    `Cetak   : ${printedAt}`,
+    `Oleh    : ${userName.substring(0, pw - 10)}`,
+  ];
+
+  const lines = [
+    BRAND.receiptHeader.padStart(Math.floor((pw + BRAND.receiptHeader.length) / 2)),
+    'LAPORAN PENJUALAN'.padStart(Math.floor((pw + 18) / 2)),
+    hr,
+    ...headerMeta,
+    hr,
+    'RINGKASAN',
+    hr,
+    row('Total Omzet', formatRupiah(s.total_revenue)),
+    row('Transaksi', String(s.total_transactions)),
+    row('Item Terjual', String(s.total_items)),
+    row('Tunai', formatRupiah(s.total_tunai)),
+    row('QRIS', formatRupiah(s.total_qris)),
+    row('Diskon', formatRupiah(s.total_discount)),
+    row('Pengeluaran', formatRupiah(s.total_expense)),
+    row('Kasbon', formatRupiah(s.total_kasbon || 0)),
+    row('Laba Kotor', formatRupiah(s.gross_profit)),
+    hr,
+    'MENU TERLARIS',
+    hr,
+    topMenuRows,
+    hr,
+    'KATEGORI TERLARIS',
+    hr,
+    topCatRows,
+    hr,
+    'JAM RAMAI',
+    hr,
+    peakHoursText,
+    hr,
+    BRAND.receiptFooter.padStart(Math.floor((pw + BRAND.receiptFooter.length) / 2)),
+    BRAND.shortName.padStart(Math.floor((pw + BRAND.shortName.length) / 2)),
+  ].join('\n');
+
+  return lines;
+}
+
+/** Open the print preview modal */
+function openReportPrintPreview(defaultSize = '80mm') {
+  const d = currentReportData;
+  const modal = document.createElement('div');
+  modal.id = 'report-print-modal';
+  modal.style.cssText = `
+    position:fixed;inset:0;z-index:9999;
+    background:rgba(0,0,0,0.7);
+    display:flex;align-items:center;justify-content:center;
+    padding:1rem;
+  `;
+
+  modal.innerHTML = `
+    <div style="
+      background:#1a1d2e;border:1px solid rgba(255,255,255,0.1);
+      border-radius:12px;width:100%;max-width:540px;
+      max-height:90vh;display:flex;flex-direction:column;
+      box-shadow:0 20px 60px rgba(0,0,0,0.6);
+    ">
+      <!-- Header -->
+      <div style="padding:1rem 1.25rem;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
+        <h3 style="margin:0;font-size:1rem;font-weight:700;color:#fff">🖨️ Preview Cetak Laporan</h3>
+        <button onclick="document.getElementById('report-print-modal').remove()" style="background:none;border:none;color:#888;font-size:1.25rem;cursor:pointer;padding:0.25rem;line-height:1">✕</button>
+      </div>
+
+      <!-- Controls -->
+      <div style="padding:0.85rem 1.25rem;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;gap:0.75rem;flex-shrink:0;flex-wrap:wrap">
+        <span style="color:#aaa;font-size:0.82rem;white-space:nowrap">Ukuran Kertas:</span>
+        <div style="display:flex;gap:0.4rem">
+          <button id="size-58" onclick="switchPrintSize('58mm')" style="padding:0.35rem 0.75rem;border-radius:6px;border:1px solid rgba(255,255,255,0.2);background:transparent;color:#ccc;cursor:pointer;font-size:0.8rem;font-family:inherit">58mm</button>
+          <button id="size-80" onclick="switchPrintSize('80mm')" style="padding:0.35rem 0.75rem;border-radius:6px;border:1px solid #6366f1;background:#6366f1;color:#fff;cursor:pointer;font-size:0.8rem;font-family:inherit">80mm</button>
+        </div>
+        <div style="margin-left:auto;display:flex;gap:0.5rem">
+          <button onclick="printThermalReport()" style="padding:0.45rem 1rem;border-radius:8px;border:none;background:#6366f1;color:#fff;cursor:pointer;font-size:0.82rem;font-weight:600;font-family:inherit">🖨️ Cetak Sekarang</button>
+          <button onclick="document.getElementById('report-print-modal').remove()" style="padding:0.45rem 0.85rem;border-radius:8px;border:1px solid rgba(255,255,255,0.15);background:transparent;color:#ccc;cursor:pointer;font-size:0.82rem;font-family:inherit">Batal</button>
+        </div>
+      </div>
+
+      <!-- Preview area -->
+      <div style="flex:1;overflow-y:auto;padding:1.25rem;display:flex;justify-content:center;background:#2a2d3e">
+        <div id="thermal-preview-wrapper" style="background:#fff;border-radius:4px;box-shadow:0 4px 20px rgba(0,0,0,0.3)">
+          <pre id="thermal-preview-text" style="
+            font-family:'Courier New',Courier,monospace;
+            font-size:12px;line-height:1.45;
+            color:#000;background:#fff;
+            margin:0;padding:10px 8px;
+            white-space:pre-wrap;word-break:break-word;
+          "></pre>
+        </div>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+  // Close on backdrop click
+  modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+
+  // Set initial size
+  window._reportPrintSize = defaultSize;
+  switchPrintSize(defaultSize);
+}
+
+/** Switch paper size and refresh preview */
+function switchPrintSize(size) {
+  window._reportPrintSize = size;
+  const btn58 = document.getElementById('size-58');
+  const btn80 = document.getElementById('size-80');
+  if (!btn58 || !btn80) return;
+
+  const activeStyle = 'border:1px solid #6366f1;background:#6366f1;color:#fff';
+  const inactiveStyle = 'border:1px solid rgba(255,255,255,0.2);background:transparent;color:#ccc';
+
+  btn58.style.cssText = `padding:0.35rem 0.75rem;border-radius:6px;cursor:pointer;font-size:0.8rem;font-family:inherit;${size === '58mm' ? activeStyle : inactiveStyle}`;
+  btn80.style.cssText = `padding:0.35rem 0.75rem;border-radius:6px;cursor:pointer;font-size:0.8rem;font-family:inherit;${size === '80mm' ? activeStyle : inactiveStyle}`;
+
+  const wrapper = document.getElementById('thermal-preview-wrapper');
+  const preview = document.getElementById('thermal-preview-text');
+  if (!wrapper || !preview) return;
+
+  // Set preview width to match paper
+  const pxWidth = size === '58mm' ? 220 : 302;
+  wrapper.style.width = pxWidth + 'px';
+  preview.style.fontSize = size === '58mm' ? '10px' : '12px';
+
+  // Regenerate content
+  preview.textContent = generateReportPrintTemplate(currentReportData, size);
+}
+
+/** Trigger actual browser print — only print area visible */
+function printThermalReport() {
+  if (!currentReportData) return;
+  const size   = window._reportPrintSize || '80mm';
+  const content = generateReportPrintTemplate(currentReportData, size);
+
+  // Build isolated print window
+  const pw = window.open('', '_blank', 'width=400,height=600');
+  pw.document.write(`<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Laporan ${BRAND.shortName}</title>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    html, body {
+      background: #fff;
+      color: #000;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: ${size === '58mm' ? '10' : '12'}px;
+      line-height: 1.45;
+      width: ${size};
+    }
+    pre {
+      white-space: pre-wrap;
+      word-break: break-word;
+      padding: 4px 6px;
+      width: 100%;
+    }
+    @page {
+      size: ${size} auto;
+      margin: 4mm 3mm;
+    }
+    @media print {
+      html, body { width: ${size}; }
+    }
+  </style>
+</head>
+<body>
+<pre>${content}</pre>
+</body>
+</html>`);
+  pw.document.close();
+  pw.focus();
+  setTimeout(() => { pw.print(); pw.close(); }, 350);
+  showToast('Mencetak laporan thermal...', 'success');
+}
+
 
 function exportReportCSV() {
-  if (!currentReportData) return;
-  const d = currentReportData;
-
-  let csv = BRAND.reportHeader + '\n';
-  csv += `Periode,${d.period.start},${d.period.end}\n\n`;
-  csv += 'RINGKASAN\n';
-  csv += `Total Omzet,${d.summary.total_revenue}\n`;
-  csv += `Total Transaksi,${d.summary.total_transactions}\n`;
-  csv += `Total Item Terjual,${d.summary.total_items}\n`;
-  csv += `Total Diskon,${d.summary.total_discount}\n`;
-  csv += `Tunai,${d.summary.total_tunai}\n`;
-  csv += `QRIS,${d.summary.total_qris}\n`;
-  csv += `Pengeluaran,${d.summary.total_expense}\n`;
-  csv += `Kasbon,${d.summary.total_kasbon}\n`;
-  csv += `Laba Kotor,${d.summary.gross_profit}\n\n`;
-
-  csv += 'DAFTAR TRANSAKSI\n';
-  csv += 'Invoice,Waktu,Kasir,Subtotal,Diskon,Total,Metode Bayar,Status\n';
-  d.transactions.forEach(t => {
-    csv += `${t.invoice_number},${t.created_at},${t.cashier_name || ''},${t.subtotal},${t.discount_amount},${t.total},${t.payment_method||''},${t.status}\n`;
-  });
-
-  csv += '\nMENU TERLARIS\n';
-  csv += 'Menu,Tipe,Terjual,Pendapatan\n';
-  d.topMenus.forEach(m => {
-    csv += `${m.menu_name},${m.menu_type},${m.total_sold},${m.total_revenue}\n`;
-  });
-
-  csv += '\nPENGELUARAN\n';
-  csv += 'Tanggal,No,Nama,Kategori,Nominal,Status,Oleh\n';
-  d.expenseList.forEach(e => {
-    csv += `${e.date},${e.expense_number},${e.name},${e.category},${e.amount},${e.status},${e.created_by_name||''}\n`;
-  });
-
-  const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
-  const link = document.createElement('a');
-  link.href = URL.createObjectURL(blob);
-  link.download = `${BRAND.reportFilePrefix}_${d.period.start}_${d.period.end}.csv`;
-  link.click();
-
-  showToast('Laporan diexport ke CSV', 'success');
+  if (!currentReportData) {
+    showToast('Muat laporan terlebih dahulu', 'warning');
+    return;
+  }
+  exportReportExcel(currentReportData);
 }
+

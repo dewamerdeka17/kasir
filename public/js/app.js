@@ -51,6 +51,7 @@
     try {
       const data = await API.get('/auth/me');
       currentUser = data.user;
+      window._currentUser = currentUser;
       showMainApp();
     } catch {
       showLogin();
@@ -121,6 +122,7 @@
     try {
       const data = await API.post('/auth/login', { username, password });
       currentUser = data.user;
+      window._currentUser = currentUser;
       showMainApp();
       showToast(`Selamat datang, ${currentUser.full_name}! 👋`, 'success');
     } catch (err) {
