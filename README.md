@@ -330,11 +330,7 @@ Beberapa ide pengembangan lanjutan:
 
 Folder `node_modules/` sebaiknya **tidak di-push ke GitHub**.  
 Tambahkan file `.gitignore` seperti berikut:
-
-```gitignore
-node_modules/
-.env
-```
+---
 
 ---
 
