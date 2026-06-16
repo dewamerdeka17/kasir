@@ -326,11 +326,8 @@ Beberapa ide pengembangan lanjutan:
 
 ---
 
-## Catatan
 
-Folder `node_modules/` sebaiknya **tidak di-push ke GitHub**.  
-Tambahkan file `.gitignore` seperti berikut:
----
+
 
 ---
 
